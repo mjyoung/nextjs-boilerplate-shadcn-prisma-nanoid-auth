@@ -1,3 +1,9 @@
+/**
+ * Authentication utilities.
+ * Inspired by Lucia Auth:
+ * https://lucia-auth.com/
+ */
+
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
