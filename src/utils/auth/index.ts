@@ -76,7 +76,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 }
 
 export type SessionValidationResult =
-  | { session: Session; user: User }
+  | { session: Session; user: UserWithoutPassword }
   | { session: null; user: null };
 
 export async function setSessionTokenCookie(

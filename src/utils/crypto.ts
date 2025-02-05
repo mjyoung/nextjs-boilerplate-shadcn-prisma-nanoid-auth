@@ -8,7 +8,7 @@ const NANOID_ALPHABET =
     With the above alphabet and 14 characters at 1000 IDs per hour:
     ~32 thousand years or 277B IDs needed, in order to have a 1% probability of at least one collision.
    */
-export function generateNanoId(length = 14, prefix = ""): string {
+export function generateNanoId(prefix = "", length = 14): string {
   const nanoid = customAlphabet(NANOID_ALPHABET, length);
   return `${prefix}_${nanoid()}`;
 }
