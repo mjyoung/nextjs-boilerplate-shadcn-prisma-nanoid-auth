@@ -1,16 +1,16 @@
 import Link from "next/link";
 
 import { Button } from "~/components/ui/Button";
+import { getCurrentSession } from "~/utils/auth";
 import { logout } from "~/utils/auth/actions";
-import { validateRequest } from "~/utils/auth/validate-request";
 
 export default async function Home() {
   // const hello = await api.post.hello({ text: "from tRPC" });
-  const { user } = await validateRequest();
+  const { user } = await getCurrentSession();
 
   return (
     <main className="\ flex flex-col items-center justify-center text-black">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
         <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
           Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
         </h1>

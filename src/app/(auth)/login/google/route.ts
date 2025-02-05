@@ -2,17 +2,20 @@ import { generateCodeVerifier, generateState } from "arctic";
 import { cookies } from "next/headers";
 
 import { env } from "~/env";
-import { google } from "~/utils/auth";
+import { google } from "~/utils/auth/google";
 
 export async function GET(): Promise<Response> {
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
 
-  const url = await google.createAuthorizationURL(state, codeVerifier, {
-    scopes: ["profile", "email"],
-  });
+  const url = google.createAuthorizationURL(state, codeVerifier, [
+    "profile",
+    "email",
+  ]);
 
-  cookies().set("google_oauth_state", state, {
+  const cookieStore = await cookies();
+
+  cookieStore.set("google_oauth_state", state, {
     path: "/",
     secure: env.NODE_ENV === "production",
     httpOnly: true,
@@ -20,7 +23,7 @@ export async function GET(): Promise<Response> {
     sameSite: "lax",
   });
 
-  cookies().set("google_oauth_code_verifier", codeVerifier, {
+  cookieStore.set("google_oauth_code_verifier", codeVerifier, {
     path: "/",
     secure: env.NODE_ENV === "production",
     httpOnly: true,

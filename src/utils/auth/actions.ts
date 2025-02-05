@@ -1,14 +1,19 @@
 "use server";
 
-import { Scrypt } from "lucia";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 // import { z } from "zod";
 
 // import { env } from "~/env";
 import { db } from "~/server/db";
-import { lucia } from "~/utils/auth";
-import { validateRequest } from "~/utils/auth/validate-request";
+import {
+  createSession,
+  deleteSessionTokenCookie,
+  generateSessionToken,
+  getCurrentSession,
+  invalidateSession,
+  setSessionTokenCookie,
+} from "~/utils/auth";
+import { hashPassword, verifyPasswordHash } from "~/utils/auth/password";
 import {
   loginSchema,
   signupSchema,
@@ -52,24 +57,18 @@ export async function login(
     };
   }
 
-  const validPassword = await new Scrypt().verify(
+  const validPassword = await verifyPasswordHash(
     existingUser.hashedPassword,
     password,
   );
+
   if (!validPassword) {
     throw new Error("Incorrect email or password");
-    return {
-      error: "Incorrect email or password",
-    };
   }
 
-  const session = await lucia.createSession(existingUser.id, {});
-  const sessionCookie = lucia.createSessionCookie(session.id);
-  cookies().set(
-    sessionCookie.name,
-    sessionCookie.value,
-    sessionCookie.attributes,
-  );
+  const token = generateSessionToken();
+  const session = await createSession(token, existingUser.id);
+  await setSessionTokenCookie(token, session.expiresAt);
   return redirect("/");
 }
 
@@ -95,12 +94,13 @@ export async function signup(
   });
 
   if (existingUser) {
+    console.error("Cannot create account with that email");
     return {
       error: "Cannot create account with that email",
     };
   }
 
-  const hashedPassword = await new Scrypt().hash(password);
+  const hashedPassword = await hashPassword(password);
   const user = await db.user.create({
     data: {
       email,
@@ -110,35 +110,20 @@ export async function signup(
     },
   });
 
-  // const verificationCode = await generateEmailVerificationCode(userId, email);
-  // await sendMail(email, EmailTemplate.EmailVerification, {
-  //   code: verificationCode,
-  // });
+  const token = generateSessionToken();
+  const session = await createSession(token, user.id);
+  await setSessionTokenCookie(token, session.expiresAt);
 
-  const session = await lucia.createSession(user.id, {});
-  const sessionCookie = lucia.createSessionCookie(session.id);
-  cookies().set(
-    sessionCookie.name,
-    sessionCookie.value,
-    sessionCookie.attributes,
-  );
   return redirect("/");
 }
 
-export async function logout(): Promise<{ error: string } | void> {
-  const { session } = await validateRequest();
-  if (!session) {
-    return {
-      error: "No session found",
-    };
+export async function logout(): Promise<void> {
+  const { session } = await getCurrentSession();
+  if (session) {
+    await invalidateSession(session.id);
+    await deleteSessionTokenCookie();
   }
-  await lucia.invalidateSession(session.id);
-  const sessionCookie = lucia.createBlankSessionCookie();
-  cookies().set(
-    sessionCookie.name,
-    sessionCookie.value,
-    sessionCookie.attributes,
-  );
+
   return redirect("/");
 }
 
@@ -146,7 +131,7 @@ export async function logout(): Promise<{ error: string } | void> {
 //   error?: string;
 //   success?: boolean;
 // }> {
-//   const { user } = await validateRequest();
+//   const { user } = await getCurrentSession();
 //   if (!user) {
 //     return redirect("/login");
 //   }
@@ -179,7 +164,7 @@ export async function logout(): Promise<{ error: string } | void> {
 //   if (typeof code !== "string" || code.length !== 8) {
 //     return { error: "Invalid code" };
 //   }
-//   const { user } = await validateRequest();
+//   const { user } = await getCurrentSession();
 //   if (!user) {
 //     return redirect(Paths.Login);
 //   }
@@ -299,13 +284,13 @@ export async function logout(): Promise<{ error: string } | void> {
 //   redirect(Paths.Dashboard);
 // }
 
-const _timeFromNow = (time: Date) => {
-  const now = new Date();
-  const diff = time.getTime() - now.getTime();
-  const minutes = Math.floor(diff / 1000 / 60);
-  const seconds = Math.floor(diff / 1000) % 60;
-  return `${minutes}m ${seconds}s`;
-};
+// const _timeFromNow = (time: Date) => {
+//   const now = new Date();
+//   const diff = time.getTime() - now.getTime();
+//   const minutes = Math.floor(diff / 1000 / 60);
+//   const seconds = Math.floor(diff / 1000) % 60;
+//   return `${minutes}m ${seconds}s`;
+// };
 
 // async function _generateEmailVerificationCode(
 //   userId: string,

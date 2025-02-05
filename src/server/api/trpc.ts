@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { uncachedValidateRequest } from "~/utils/auth/validate-request";
+import { getUncachedCurrentSession } from "~/utils/auth";
 
 /**
  * 1. CONTEXT
@@ -26,7 +26,7 @@ import { uncachedValidateRequest } from "~/utils/auth/validate-request";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const { session, user } = await uncachedValidateRequest();
+  const { session, user } = await getUncachedCurrentSession();
 
   return {
     session,
