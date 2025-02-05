@@ -40,7 +40,7 @@ export async function GET(request: Request): Promise<Response> {
       "https://openidconnect.googleapis.com/v1/userinfo",
       {
         headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Authorization: `Bearer ${tokens.accessToken()}`,
         },
       },
     );
