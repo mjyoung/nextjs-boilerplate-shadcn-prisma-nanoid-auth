@@ -1,17 +1,22 @@
 import { OAuth2RequestError } from "arctic";
-import { generateId } from "lucia";
 import { cookies } from "next/headers";
 
 import { db } from "~/server/db";
-import { google, lucia } from "~/utils/auth";
+import {
+  createSession,
+  generateSessionToken,
+  setSessionTokenCookie,
+} from "~/utils/auth";
+import { google } from "~/utils/auth/providers/google";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const storedState = cookies().get("google_oauth_state")?.value ?? null;
+  const cookieStore = await cookies();
+  const storedState = cookieStore.get("google_oauth_state")?.value ?? null;
   const storedCodeVerifier =
-    cookies().get("google_oauth_code_verifier")?.value ?? null;
+    cookieStore.get("google_oauth_code_verifier")?.value ?? null;
 
   if (
     !code ||
@@ -52,13 +57,9 @@ export async function GET(request: Request): Promise<Response> {
     });
 
     if (existingUser) {
-      const session = await lucia.createSession(existingUser.id, {});
-      const sessionCookie = lucia.createSessionCookie(session.id);
-      cookies().set(
-        sessionCookie.name,
-        sessionCookie.value,
-        sessionCookie.attributes,
-      );
+      const token = generateSessionToken();
+      const session = await createSession(token, existingUser.id);
+      await setSessionTokenCookie(token, session.expiresAt);
       return new Response(null, {
         status: 302,
         headers: {
@@ -76,13 +77,9 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
 
-    const session = await lucia.createSession(newUser.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    cookies().set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
+    const token = generateSessionToken();
+    const session = await createSession(token, newUser.id);
+    await setSessionTokenCookie(token, session.expiresAt);
     return new Response(null, {
       status: 302,
       headers: {
