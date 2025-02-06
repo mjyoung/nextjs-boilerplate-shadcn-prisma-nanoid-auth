@@ -24,9 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={cn("min-h-screen font-sans antialiased", inter.variable)}
+        className={cn(
+          "flex min-h-screen flex-col bg-slate-200 font-sans antialiased",
+          inter.variable,
+        )}
       >
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col p-6">{children}</div>
+          </div>
+        </TRPCReactProvider>
       </body>
     </html>
   );
