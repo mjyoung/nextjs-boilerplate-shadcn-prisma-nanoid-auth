@@ -10,5 +10,5 @@ const NANOID_ALPHABET =
    */
 export function generateNanoId(prefix = "", length = 14): string {
   const nanoid = customAlphabet(NANOID_ALPHABET, length);
-  return `${prefix}_${nanoid()}`;
+  return `${prefix ? prefix + "_" : ""}${nanoid()}`;
 }
