@@ -1,4 +1,4 @@
-import { Button } from "~/components/ui/Button";
+import { Button } from "~/components/ui/button";
 import { api, HydrateClient } from "~/trpc/server";
 import { getCurrentSession } from "~/utils/auth";
 import { logout } from "~/utils/auth/actions";

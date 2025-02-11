@@ -6,6 +6,7 @@ export default async function Page() {
     <>
       <h1>Sign in</h1>
       <a href="/login/google">Login with Google</a>
+      {/* @ts-expect-error action mismatch */}
       <form action={login}>
         <label htmlFor="email">Email</label>
         <input name="email" id="email" />
