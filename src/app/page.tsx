@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { Button } from "~/components/ui/Button";
 import { api, HydrateClient } from "~/trpc/server";
 import { getCurrentSession } from "~/utils/auth";

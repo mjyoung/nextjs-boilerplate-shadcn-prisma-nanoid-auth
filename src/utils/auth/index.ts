@@ -4,15 +4,16 @@
  * https://lucia-auth.com/
  */
 
+import { sha256 } from "@oslojs/crypto/sha2";
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
 } from "@oslojs/encoding";
-import { sha256 } from "@oslojs/crypto/sha2";
+import type { Session } from "@prisma/client";
 import { cookies } from "next/headers";
-import type { User, Session } from "@prisma/client";
-import { db } from "~/server/db";
 import { cache } from "react";
+
+import { db } from "~/server/db";
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
