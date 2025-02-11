@@ -53,6 +53,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "^6.3.1",
     "tailwindcss": "^3.4.17",
+    "tailwindcss-motion": "^1.1.0",
     "typescript": "^5.7.3"
   },
   "prisma": {

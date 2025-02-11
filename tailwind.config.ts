@@ -82,6 +82,7 @@ const config = {
     }),
 
     require("tailwindcss-animate"),
+    require("tailwindcss-motion"),
   ],
 } satisfies Config;
 
